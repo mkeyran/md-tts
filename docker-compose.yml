@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile.cpu
     container_name: tts-converter-cpu
     ports:
-      - "8000:8000"
+      - "8007:8000"
     volumes:
       - ./storage:/app/storage
     environment:

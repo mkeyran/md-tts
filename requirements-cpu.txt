@@ -15,8 +15,8 @@ python-jose[cryptography]>=3.3.0
 piper-tts>=1.2.0
 aiohttp>=3.8.0
 
-# CPU-only PyTorch (install separately)
+# CPU-only PyTorch
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch>=2.0.0,<2.5.0+cpu
-torchvision
-torchaudio
+torch==2.4.1+cpu
+torchvision==0.19.1+cpu
+torchaudio==2.4.1+cpu
