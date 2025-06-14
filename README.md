@@ -5,13 +5,15 @@ A web-based text-to-speech application that converts markdown documents to audio
 ## Features
 
 - 🎯 Simple web interface for pasting markdown text
+- 🗣️ **19 voice models** across 10+ languages with voice selection
 - 🤖 Text-to-speech conversion using piper-tts with CUDA acceleration
 - 📁 MP3 file generation and download
 - 📊 Conversion history tracking
-- 🎨 Responsive web UI
+- 🎨 Responsive web UI with voice selection dropdown
 - 🚀 FastAPI backend with comprehensive endpoints
 - 🧪 Complete test suite with 58 tests
 - 📦 Automatic voice model downloading from HuggingFace
+- 🌍 Multi-language support (English, German, French, Spanish, Russian, etc.)
 
 ## Tech Stack
 
@@ -110,12 +112,13 @@ uv run mypy .
 
 1. Start the server: `uv run uvicorn main:app --reload`
 2. Open your browser to http://localhost:8000
-3. Paste your markdown text in the textarea
-4. Optionally add a title for your audio file
-5. Click "Convert to Speech" 
-6. Wait for conversion to complete (automatic status updates)
-7. Download the generated MP3 file
-8. View and manage your conversion history
+3. Select your preferred voice from the dropdown (19 voices available)
+4. Paste your markdown text in the textarea
+5. Optionally add a title for your audio file
+6. Click "Convert to Speech" 
+7. Wait for conversion to complete (automatic status updates)
+8. Download the generated MP3 file
+9. View and manage your conversion history
 
 ## Project Structure
 
@@ -124,7 +127,8 @@ tts/
 ├── main.py                      # FastAPI application entry point
 ├── models/
 │   ├── schemas.py              # Pydantic request/response models
-│   └── database.py             # SQLite database models
+│   ├── database.py             # SQLite database models
+│   └── voice_models.py         # Voice model configurations (19 models)
 ├── services/
 │   ├── markdown_processor.py  # Markdown text extraction
 │   ├── tts_service.py          # TTS conversion with piper-tts
@@ -151,8 +155,9 @@ tts/
 ### Core Endpoints
 - `GET /` - Main web interface
 - `GET /api` - API information
+- `GET /voices` - **NEW:** Get available voice models (19 voices)
 - `GET /health` - Health check with service status and CUDA info
-- `POST /convert` - Convert markdown text to speech
+- `POST /convert` - Convert markdown text to speech (now accepts `voice_id`)
 - `GET /download/{conversion_id}` - Download generated MP3 file
 - `GET /status/{conversion_id}` - Check conversion status
 
@@ -163,10 +168,13 @@ tts/
 ### Example Usage
 
 ```bash
-# Convert markdown to speech
+# Get available voices
+curl http://localhost:8000/voices
+
+# Convert markdown to speech with specific voice
 curl -X POST http://localhost:8000/convert \
   -H "Content-Type: application/json" \
-  -d '{"markdown_text": "# Hello\n\nThis is **test** text.", "title": "My Audio"}'
+  -d '{"markdown_text": "# Hello\n\nThis is **test** text.", "title": "My Audio", "voice_id": "en_US-lessac-medium"}'
 
 # Download the generated audio file
 curl -o audio.mp3 http://localhost:8000/download/{conversion_id}
@@ -181,6 +189,45 @@ curl http://localhost:8000/history
 curl -X DELETE http://localhost:8000/history/{conversion_id}
 ```
 
+## Available Voice Models
+
+The application includes **19 high-quality voice models** across multiple languages:
+
+### 🇺🇸 English (US) - 6 voices
+- **lessac** (female, medium/high) - *Default voice*
+- **ryan** (male, medium/high)
+- **amy** (female, medium)
+- **joe** (male, medium)
+
+### 🇬🇧 English (UK) - 2 voices  
+- **alan** (male, medium)
+- **cori** (female, high)
+
+### 🇩🇪 German - 2 voices
+- **thorsten** (male, medium/high)
+
+### 🇫🇷 French - 2 voices
+- **siwis** (female, medium)
+- **tom** (male, medium)
+
+### 🇪🇸 Spanish - 2 voices
+- **davefx** (male, medium) - Spain
+- **claude** (male, high) - Mexico
+
+### 🇮🇹 Italian - 1 voice
+- **paola** (female, medium)
+
+### 🇧🇷 Portuguese - 1 voice  
+- **faber** (male, medium) - Brazilian
+
+### 🇷🇺 Russian - 4 voices
+- **denis** (male, medium)
+- **dmitri** (male, medium)
+- **irina** (female, medium)
+- **ruslan** (male, medium)
+
+All voice models are automatically downloaded from HuggingFace on first use and cached locally for performance.
+
 ## Current Status
 
 - ✅ Project setup with uv and FastAPI
@@ -192,4 +239,5 @@ curl -X DELETE http://localhost:8000/history/{conversion_id}
 - ✅ Conversion history tracking with SQLite database
 - ✅ Comprehensive test suite (58 tests)
 - ✅ Responsive web frontend interface
+- ✅ **Voice model selection with 19 voices across 10+ languages**
 - ✅ Docker containerization with CPU and CUDA variants

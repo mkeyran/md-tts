@@ -4,7 +4,7 @@ This file contains instructions for Claude Code when working on this project.
 
 ## Project Overview
 
-This is a TTS (Text-to-Speech) web application that converts markdown documents to audio files using piper-tts.
+This is a TTS (Text-to-Speech) web application that converts markdown documents to audio files using piper-tts with support for 19 voice models across 10+ languages.
 
 ## Development Commands
 
@@ -47,11 +47,12 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 
 - `main.py` - FastAPI application entry point
 - `models/` - Pydantic models and database schemas
+  - `voice_models.py` - Voice model configurations (19 models)
 - `services/` - Business logic and external integrations
 - `static/` - Frontend HTML/CSS/JavaScript files
-  - `index.html` - Main web interface with responsive design
+  - `index.html` - Main web interface with voice selection and responsive design
   - `style.css` - Modern CSS styling with gradients and animations
-  - `app.js` - Frontend application with automated status updates
+  - `app.js` - Frontend application with voice selection and automated status updates
 - `storage/` - File storage for MP3 files and database
 - `tests/` - Test files organized by module
 - `Dockerfile.cpu` - Docker configuration for CPU-only deployment
@@ -116,6 +117,7 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - ✅ 58 tests covering all functionality
 - ✅ Conversion history database with SQLite
 - ✅ Responsive web frontend with automated status updates
+- ✅ **Voice model selection system with 19 voices across 10+ languages**
 - ✅ Docker containerization with CPU and CUDA variants
 
 ## API Endpoints
@@ -123,8 +125,9 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 ### Implemented Endpoints
 - `GET /` - Main web interface
 - `GET /api` - API information and version
+- `GET /voices` - **NEW:** Get available voice models (19 voices across 10+ languages)
 - `GET /health` - Health check with service status and CUDA info
-- `POST /convert` - Convert markdown text to speech (returns conversion_id)
+- `POST /convert` - Convert markdown text to speech (now accepts voice_id parameter)
 - `GET /download/{conversion_id}` - Download generated MP3 file
 - `GET /status/{conversion_id}` - Check conversion status and file info
 - `GET /history` - Get conversion history with pagination (limit/offset params)
@@ -132,11 +135,17 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 
 ### Request/Response Examples
 
-**Convert Text:**
+**Get Available Voices:**
+```bash
+curl http://localhost:8000/voices
+# Returns: {"voices": [...], "default_voice": "en_US-lessac-medium"}
+```
+
+**Convert Text with Voice Selection:**
 ```bash
 curl -X POST http://localhost:8000/convert \
   -H "Content-Type: application/json" \
-  -d '{"markdown_text": "# Hello\n\nThis is **test** text.", "title": "My Audio"}'
+  -d '{"markdown_text": "# Hello\n\nThis is **test** text.", "title": "My Audio", "voice_id": "en_US-lessac-medium"}'
 # Returns: {"conversion_id": "uuid", "status": "completed", "download_url": "/download/uuid"}
 ```
 
