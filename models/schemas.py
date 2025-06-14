@@ -3,6 +3,7 @@ Pydantic models for request/response schemas.
 """
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -14,6 +15,7 @@ class ConvertRequest(BaseModel):
         ..., min_length=1, description="Markdown text to convert"
     )
     title: str | None = Field(None, description="Optional title for the conversion")
+    voice_id: str | None = Field(None, description="Voice model ID to use for conversion")
 
 
 class ConvertResponse(BaseModel):
@@ -43,3 +45,23 @@ class HistoryResponse(BaseModel):
     items: list[HistoryItem] = Field(
         ..., description="List of conversion history items"
     )
+
+
+class VoiceModelInfo(BaseModel):
+    """Voice model information."""
+    
+    id: str = Field(..., description="Voice model ID")
+    language: str = Field(..., description="Language name")
+    language_code: str = Field(..., description="Language code")
+    language_name: str = Field(..., description="Native language name")
+    speaker: str = Field(..., description="Speaker name")
+    quality: str = Field(..., description="Model quality (low, medium, high)")
+    gender: Optional[str] = Field(None, description="Voice gender")
+    description: Optional[str] = Field(None, description="Voice description")
+
+
+class VoicesResponse(BaseModel):
+    """Response model for available voices."""
+    
+    voices: list[VoiceModelInfo] = Field(..., description="List of available voice models")
+    default_voice: str = Field(..., description="Default voice model ID")

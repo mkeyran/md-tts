@@ -2,13 +2,17 @@ class TTSApp {
     constructor() {
         this.currentConversionId = null;
         this.statusCheckInterval = null;
+        this.voices = [];
+        this.defaultVoice = null;
         this.initializeElements();
         this.attachEventListeners();
+        this.loadVoices();
         this.loadHistory();
     }
 
     initializeElements() {
         this.titleInput = document.getElementById('title');
+        this.voiceSelect = document.getElementById('voice-select');
         this.markdownTextarea = document.getElementById('markdown-text');
         this.convertBtn = document.getElementById('convert-btn');
         this.statusSection = document.getElementById('status-section');
@@ -34,9 +38,64 @@ class TTSApp {
         });
     }
 
+    async loadVoices() {
+        try {
+            const response = await fetch('/voices');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.voices = data.voices;
+            this.defaultVoice = data.default_voice;
+            this.populateVoiceSelect();
+        } catch (error) {
+            console.error('Failed to load voices:', error);
+            this.voiceSelect.innerHTML = '<option value="">Failed to load voices</option>';
+        }
+    }
+
+    populateVoiceSelect() {
+        this.voiceSelect.innerHTML = '';
+        
+        // Group voices by language
+        const voicesByLanguage = {};
+        this.voices.forEach(voice => {
+            if (!voicesByLanguage[voice.language]) {
+                voicesByLanguage[voice.language] = [];
+            }
+            voicesByLanguage[voice.language].push(voice);
+        });
+
+        // Create optgroups for each language
+        Object.keys(voicesByLanguage).sort().forEach(language => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = language;
+            
+            voicesByLanguage[language].forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.id;
+                option.textContent = `${voice.speaker} (${voice.quality})`;
+                if (voice.gender) {
+                    option.textContent += ` - ${voice.gender}`;
+                }
+                if (voice.description) {
+                    option.title = voice.description;
+                }
+                if (voice.id === this.defaultVoice) {
+                    option.selected = true;
+                }
+                optgroup.appendChild(option);
+            });
+            
+            this.voiceSelect.appendChild(optgroup);
+        });
+    }
+
     async convertToSpeech() {
         const markdownText = this.markdownTextarea.value.trim();
         const title = this.titleInput.value.trim();
+        const voiceId = this.voiceSelect.value || null;
 
         if (!markdownText) {
             this.showError('Please enter some markdown text to convert.');
@@ -45,7 +104,12 @@ class TTSApp {
 
         this.convertBtn.disabled = true;
         this.convertBtn.textContent = 'Converting...';
-        this.showStatusSection('processing', 'Converting your markdown to speech...');
+        
+        // Get selected voice info for display
+        const selectedVoice = this.voices.find(v => v.id === voiceId);
+        const voiceName = selectedVoice ? `${selectedVoice.speaker} (${selectedVoice.language})` : 'default voice';
+        
+        this.showStatusSection('processing', `Converting with ${voiceName}...`);
 
         try {
             const response = await fetch('/convert', {
@@ -55,7 +119,8 @@ class TTSApp {
                 },
                 body: JSON.stringify({
                     markdown_text: markdownText,
-                    title: title || null
+                    title: title || null,
+                    voice_id: voiceId
                 })
             });
 

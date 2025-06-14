@@ -10,7 +10,8 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from models.schemas import ConvertRequest, ConvertResponse, HistoryResponse
+from models.schemas import ConvertRequest, ConvertResponse, HistoryResponse, VoicesResponse, VoiceModelInfo
+from models.voice_models import get_available_voices, get_default_voice
 from services.database_service import DatabaseService
 from services.markdown_processor import MarkdownProcessor
 from services.tts_service import TTSService
@@ -80,6 +81,37 @@ async def api_info():
     return {"message": "TTS Markdown Converter API", "version": "0.1.0"}
 
 
+@app.get("/voices", response_model=VoicesResponse)
+async def get_available_voices_endpoint():
+    """Get list of available voice models."""
+    try:
+        voices = get_available_voices()
+        default_voice = get_default_voice()
+        
+        voice_list = [
+            VoiceModelInfo(
+                id=voice.id,
+                language=voice.language,
+                language_code=voice.language_code,
+                language_name=voice.language_name,
+                speaker=voice.speaker,
+                quality=voice.quality,
+                gender=voice.gender,
+                description=voice.description
+            )
+            for voice in voices
+        ]
+        
+        return VoicesResponse(
+            voices=voice_list,
+            default_voice=default_voice.id
+        )
+    
+    except Exception as e:
+        logger.error(f"Failed to get available voices: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve voice models")
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -109,9 +141,9 @@ async def convert_markdown_to_speech(
         if not text.strip():
             raise HTTPException(status_code=400, detail="No text found in markdown")
 
-        # Convert to speech
+        # Convert to speech using specified voice
         conversion_id, audio_file = await tts_service.convert_text_to_speech(
-            text, request.title
+            text, request.title, request.voice_id
         )
 
         # Record conversion in database

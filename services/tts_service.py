@@ -6,9 +6,12 @@ import asyncio
 import logging
 import uuid
 from pathlib import Path
+from typing import Dict, Optional
 
 import torch
 from piper import PiperVoice
+
+from models.voice_models import VoiceModel, get_voice_by_id, get_default_voice
 
 logger = logging.getLogger(__name__)
 
@@ -30,72 +33,97 @@ class TTSService:
         self.audio_path = self.storage_path / "audio"
         self.audio_path.mkdir(exist_ok=True)
 
-        self.voice: PiperVoice | None = None
+        # Create models subdirectory
+        self.models_path = self.storage_path / "models"
+        self.models_path.mkdir(exist_ok=True)
+
+        # Cache loaded voices
+        self.loaded_voices: Dict[str, PiperVoice] = {}
+        self.current_voice: Optional[PiperVoice] = None
+        self.current_voice_id: Optional[str] = None
         self.cuda_available = torch.cuda.is_available()
 
         logger.info(f"TTS Service initialized. CUDA available: {self.cuda_available}")
 
-    async def initialize_voice(self, voice_model: str = "en_US-lessac-medium") -> None:
+    async def initialize_voice(self, voice_id: Optional[str] = None) -> None:
         """
         Initialize the piper voice model.
 
         Args:
-            voice_model: Voice model to use for TTS
+            voice_id: Voice model ID to use for TTS
         """
+        if voice_id is None:
+            voice_id = get_default_voice().id
+            
         try:
-            # Download voice model if not exists
-            model_path = await self._download_voice_model(voice_model)
-
-            # Load voice model
-            self.voice = PiperVoice.load(model_path, use_cuda=self.cuda_available)
-            logger.info(f"Voice model loaded: {voice_model}")
+            # Load voice if not already loaded
+            if voice_id not in self.loaded_voices:
+                model_path = await self._download_voice_model(voice_id)
+                voice = PiperVoice.load(model_path, use_cuda=self.cuda_available)
+                self.loaded_voices[voice_id] = voice
+                logger.info(f"Voice model loaded: {voice_id}")
+            
+            # Set current voice
+            self.current_voice = self.loaded_voices[voice_id]
+            self.current_voice_id = voice_id
 
         except Exception as e:
-            logger.error(f"Failed to initialize voice model: {e}")
+            logger.error(f"Failed to initialize voice model {voice_id}: {e}")
             raise
 
-    async def _download_voice_model(self, voice_model: str) -> Path:
+    async def get_voice(self, voice_id: Optional[str] = None) -> PiperVoice:
+        """
+        Get a voice model, loading it if necessary.
+
+        Args:
+            voice_id: Voice model ID
+
+        Returns:
+            Loaded PiperVoice instance
+        """
+        if voice_id is None:
+            voice_id = get_default_voice().id
+
+        if voice_id not in self.loaded_voices:
+            await self.initialize_voice(voice_id)
+        
+        return self.loaded_voices[voice_id]
+
+    @property
+    def voice(self) -> Optional[PiperVoice]:
+        """Get the current voice for backward compatibility."""
+        return self.current_voice
+
+    async def _download_voice_model(self, voice_id: str) -> Path:
         """
         Download voice model if it doesn't exist.
 
         Args:
-            voice_model: Voice model name
+            voice_id: Voice model ID
 
         Returns:
             Path to the voice model file
         """
-        models_dir = self.storage_path / "models"
-        models_dir.mkdir(exist_ok=True)
-
-        model_file = models_dir / f"{voice_model}.onnx"
-        config_file = models_dir / f"{voice_model}.onnx.json"
+        model_file = self.models_path / f"{voice_id}.onnx"
+        config_file = self.models_path / f"{voice_id}.onnx.json"
 
         if model_file.exists() and config_file.exists():
             return model_file
 
-        # Download voice model directly from GitHub releases
+        # Get voice model configuration
+        voice_model = get_voice_by_id(voice_id)
+        if not voice_model:
+            raise RuntimeError(f"Voice model {voice_id} not found in configuration")
+
+        # Download voice model from HuggingFace
         try:
             import aiohttp
 
-            # Voice model URLs from piper releases
-            voice_urls = {
-                "en_US-lessac-medium": {
-                    "model": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx",
-                    "config": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json",
-                }
-            }
-
-            if voice_model not in voice_urls:
-                logger.warning(
-                    f"Voice model {voice_model} not available for direct download"
-                )
-                raise RuntimeError(f"Voice model {voice_model} not supported")
-
-            logger.info(f"Downloading voice model: {voice_model}")
+            logger.info(f"Downloading voice model: {voice_id}")
 
             async with aiohttp.ClientSession() as session:
                 # Download model file
-                async with session.get(voice_urls[voice_model]["model"]) as response:
+                async with session.get(voice_model.model_url) as response:
                     if response.status == 200:
                         with open(model_file, "wb") as f:
                             async for chunk in response.content.iter_chunked(8192):
@@ -107,7 +135,7 @@ class TTSService:
                         )
 
                 # Download config file
-                async with session.get(voice_urls[voice_model]["config"]) as response:
+                async with session.get(voice_model.config_url) as response:
                     if response.status == 200:
                         with open(config_file, "wb") as f:
                             async for chunk in response.content.iter_chunked(8192):
@@ -118,7 +146,7 @@ class TTSService:
                             f"Failed to download config file: HTTP {response.status}"
                         )
 
-            logger.info(f"Successfully downloaded voice model: {voice_model}")
+            logger.info(f"Successfully downloaded voice model: {voice_id}")
             return model_file
 
         except Exception as e:
@@ -126,7 +154,7 @@ class TTSService:
             raise RuntimeError(f"Failed to download voice model: {e}")
 
     async def convert_text_to_speech(
-        self, text: str, title: str | None = None
+        self, text: str, title: str | None = None, voice_id: str | None = None
     ) -> tuple[str, Path]:
         """
         Convert text to speech and save as audio file.
@@ -134,12 +162,13 @@ class TTSService:
         Args:
             text: Text to convert to speech
             title: Optional title for the conversion
+            voice_id: Voice model ID to use
 
         Returns:
             Tuple of (conversion_id, audio_file_path)
         """
-        if not self.voice:
-            await self.initialize_voice()
+        # Get the specified voice or default
+        voice = await self.get_voice(voice_id)
 
         # Generate unique ID for this conversion
         conversion_id = str(uuid.uuid4())
@@ -159,9 +188,9 @@ class TTSService:
             import wave
 
             with wave.open(str(audio_file), "wb") as wav_file:
-                self.voice.synthesize(text, wav_file)
+                voice.synthesize(text, wav_file)
 
-            logger.info(f"Generated audio file: {audio_file}")
+            logger.info(f"Generated audio file: {audio_file} using voice: {voice_id or 'default'}")
 
             # Convert to MP3 for better web compatibility
             mp3_file = audio_file.with_suffix(".mp3")
