@@ -10,7 +10,7 @@ A web-based text-to-speech application that converts markdown documents to audio
 - 📊 Conversion history tracking
 - 🎨 Responsive web UI
 - 🚀 FastAPI backend with comprehensive endpoints
-- 🧪 Complete test suite with 40+ tests
+- 🧪 Complete test suite with 58 tests
 - 📦 Automatic voice model downloading from HuggingFace
 
 ## Tech Stack
@@ -20,7 +20,7 @@ A web-based text-to-speech application that converts markdown documents to audio
 - **Voice Models**: Auto-downloaded from HuggingFace
 - **Frontend**: Vanilla HTML/CSS/JavaScript  
 - **Package Management**: uv
-- **Testing**: pytest with 40+ comprehensive tests
+- **Testing**: pytest with 58 comprehensive tests
 - **Storage**: SQLite for history, local filesystem for MP3 files
 - **Dependencies**: aiohttp, torch, markdown, beautifulsoup4
 
@@ -63,10 +63,12 @@ uv run mypy .
 tts/
 ├── main.py                      # FastAPI application entry point
 ├── models/
-│   └── schemas.py              # Pydantic request/response models
+│   ├── schemas.py              # Pydantic request/response models
+│   └── database.py             # SQLite database models
 ├── services/
 │   ├── markdown_processor.py  # Markdown text extraction
-│   └── tts_service.py          # TTS conversion with piper-tts
+│   ├── tts_service.py          # TTS conversion with piper-tts
+│   └── database_service.py     # Conversion history management
 ├── static/                     # Frontend HTML/CSS/JavaScript
 ├── storage/                    # MP3 files and SQLite database
 ├── tests/                      # Test files
@@ -83,6 +85,10 @@ tts/
 - `GET /download/{conversion_id}` - Download generated MP3 file
 - `GET /status/{conversion_id}` - Check conversion status
 
+### History Endpoints
+- `GET /history` - Get conversion history with pagination
+- `DELETE /history/{conversion_id}` - Delete conversion from history
+
 ### Example Usage
 
 ```bash
@@ -96,6 +102,12 @@ curl -o audio.mp3 http://localhost:8000/download/{conversion_id}
 
 # Check conversion status
 curl http://localhost:8000/status/{conversion_id}
+
+# Get conversion history
+curl http://localhost:8000/history
+
+# Delete conversion from history
+curl -X DELETE http://localhost:8000/history/{conversion_id}
 ```
 
 ## Current Status
@@ -106,5 +118,6 @@ curl http://localhost:8000/status/{conversion_id}
 - ✅ Voice model auto-download from HuggingFace
 - ✅ File storage and download endpoints
 - ✅ Complete API with MP3 generation
-- ⏳ Conversion history tracking (in progress)
+- ✅ Conversion history tracking with SQLite database
+- ✅ Comprehensive test suite (58 tests)
 - ⏳ Web frontend interface
