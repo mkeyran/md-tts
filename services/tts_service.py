@@ -77,32 +77,51 @@ class TTSService:
         if model_file.exists() and config_file.exists():
             return model_file
         
-        # Download using piper's download functionality
+        # Download voice model directly from GitHub releases
         try:
-            # Use piper-tts download command
-            cmd = [
-                sys.executable, "-m", "piper.download",
-                voice_model,
-                "--data-dir", str(models_dir)
-            ]
+            import aiohttp
             
-            process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+            # Voice model URLs from piper releases
+            voice_urls = {
+                "en_US-lessac-medium": {
+                    "model": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx",
+                    "config": "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json"
+                }
+            }
             
-            stdout, stderr = await process.communicate()
+            if voice_model not in voice_urls:
+                logger.warning(f"Voice model {voice_model} not available for direct download")
+                raise RuntimeError(f"Voice model {voice_model} not supported")
             
-            if process.returncode != 0:
-                raise RuntimeError(f"Failed to download voice model: {stderr.decode()}")
+            logger.info(f"Downloading voice model: {voice_model}")
             
-            logger.info(f"Downloaded voice model: {voice_model}")
+            async with aiohttp.ClientSession() as session:
+                # Download model file
+                async with session.get(voice_urls[voice_model]["model"]) as response:
+                    if response.status == 200:
+                        with open(model_file, 'wb') as f:
+                            async for chunk in response.content.iter_chunked(8192):
+                                f.write(chunk)
+                        logger.info(f"Downloaded model file: {model_file}")
+                    else:
+                        raise RuntimeError(f"Failed to download model file: HTTP {response.status}")
+                
+                # Download config file
+                async with session.get(voice_urls[voice_model]["config"]) as response:
+                    if response.status == 200:
+                        with open(config_file, 'wb') as f:
+                            async for chunk in response.content.iter_chunked(8192):
+                                f.write(chunk)
+                        logger.info(f"Downloaded config file: {config_file}")
+                    else:
+                        raise RuntimeError(f"Failed to download config file: HTTP {response.status}")
+            
+            logger.info(f"Successfully downloaded voice model: {voice_model}")
             return model_file
             
         except Exception as e:
             logger.error(f"Error downloading voice model: {e}")
-            raise
+            raise RuntimeError(f"Failed to download voice model: {e}")
     
     async def convert_text_to_speech(
         self, 
@@ -135,8 +154,9 @@ class TTSService:
         
         try:
             # Generate audio using piper
-            with open(audio_file, "wb") as f:
-                self.voice.synthesize(text, f)
+            import wave
+            with wave.open(str(audio_file), "wb") as wav_file:
+                self.voice.synthesize(text, wav_file)
             
             logger.info(f"Generated audio file: {audio_file}")
             

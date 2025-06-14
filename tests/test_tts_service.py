@@ -71,17 +71,11 @@ class TestTTSService:
             use_cuda=self.service.cuda_available
         )
     
-    @patch('services.tts_service.asyncio.create_subprocess_exec')
-    async def test_download_voice_model_failure(self, mock_subprocess) -> None:
+    async def test_download_voice_model_failure(self) -> None:
         """Test voice model download failure."""
-        # Mock failed download
-        mock_process = Mock()
-        mock_process.returncode = 1
-        mock_process.communicate = AsyncMock(return_value=(b"", b"Download failed"))
-        mock_subprocess.return_value = mock_process
-        
-        with pytest.raises(RuntimeError, match="Failed to download voice model"):
-            await self.service._download_voice_model("test-voice")
+        # Test with unsupported voice model
+        with pytest.raises(RuntimeError, match="Voice model .* not supported"):
+            await self.service._download_voice_model("unsupported-voice")
     
     async def test_download_voice_model_existing_files(self) -> None:
         """Test that existing model files are reused."""
@@ -101,11 +95,32 @@ class TestTTSService:
     
     @patch.object(TTSService, 'initialize_voice')
     @patch.object(TTSService, '_convert_to_mp3')
-    async def test_convert_text_to_speech_success(self, mock_convert_mp3, mock_init_voice) -> None:
+    @patch('wave.open')
+    async def test_convert_text_to_speech_success(self, mock_wave_open, mock_convert_mp3, mock_init_voice) -> None:
         """Test successful text-to-speech conversion."""
         # Mock voice
         mock_voice = Mock()
-        mock_voice.synthesize = Mock()
+        
+        # Mock wave file
+        mock_wav_file = Mock()
+        mock_wav_file.__enter__ = Mock(return_value=mock_wav_file)
+        mock_wav_file.__exit__ = Mock(return_value=None)
+        mock_wave_open.return_value = mock_wav_file
+        
+        # Setup voice synthesize to create a dummy file
+        def mock_synthesize(text, wav_file):
+            # Just create a dummy file at the expected location
+            # The convert_text_to_speech method will create the file path
+            pass
+        
+        # Override wave.open to create actual files
+        def mock_wave_open_func(filename, mode):
+            # Create a dummy file
+            Path(filename).touch()
+            return mock_wav_file
+        
+        mock_wave_open.side_effect = mock_wave_open_func
+        mock_voice.synthesize = Mock(side_effect=mock_synthesize)
         self.service.voice = mock_voice
         
         # Mock MP3 conversion
@@ -125,20 +140,36 @@ class TestTTSService:
         assert audio_file.suffix == ".mp3"
         assert title.replace(" ", "_") in str(audio_file) or "Test" in str(audio_file)
         
-        # Voice should have been called with text and a file handle
+        # Voice should have been called with text and a wave file
         assert mock_voice.synthesize.call_count == 1
         call_args = mock_voice.synthesize.call_args[0]
         assert call_args[0] == text
-        assert hasattr(call_args[1], 'write')  # Should be a file-like object
+        # Check that wave.open was called
+        mock_wave_open.assert_called_once()
         
         # MP3 conversion should have been called
         mock_convert_mp3.assert_called_once()
     
     @patch.object(TTSService, 'initialize_voice')
-    async def test_convert_text_to_speech_no_title(self, mock_init_voice) -> None:
+    @patch('wave.open')
+    async def test_convert_text_to_speech_no_title(self, mock_wave_open, mock_init_voice) -> None:
         """Test text-to-speech conversion without title."""
         # Mock voice
         mock_voice = Mock()
+        
+        # Mock wave file
+        mock_wav_file = Mock()
+        mock_wav_file.__enter__ = Mock(return_value=mock_wav_file)
+        mock_wav_file.__exit__ = Mock(return_value=None)
+        mock_wave_open.return_value = mock_wav_file
+        
+        # Override wave.open to create actual files
+        def mock_wave_open_func(filename, mode):
+            # Create a dummy file
+            Path(filename).touch()
+            return mock_wav_file
+        
+        mock_wave_open.side_effect = mock_wave_open_func
         mock_voice.synthesize = Mock()
         self.service.voice = mock_voice
         
