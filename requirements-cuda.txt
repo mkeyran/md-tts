@@ -1,6 +1,7 @@
 # CUDA-enabled requirements file
 # Install with: pip install -r requirements-cuda.txt
 
+# Standard packages from PyPI
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 python-multipart>=0.0.6
@@ -15,7 +16,7 @@ piper-tts>=1.2.0
 aiohttp>=3.8.0
 
 # CUDA-enabled PyTorch
---index-url https://download.pytorch.org/whl/cu121
-torch>=2.0.0,<2.5.0
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch>=2.0.0,<2.5.0+cu121
 torchvision
 torchaudio

@@ -1,6 +1,7 @@
 # CPU-only requirements file
 # Install with: pip install -r requirements-cpu.txt
 
+# Standard packages from PyPI
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 python-multipart>=0.0.6
@@ -14,8 +15,8 @@ python-jose[cryptography]>=3.3.0
 piper-tts>=1.2.0
 aiohttp>=3.8.0
 
-# CPU-only PyTorch
---index-url https://download.pytorch.org/whl/cpu
-torch>=2.0.0,<2.5.0
+# CPU-only PyTorch (install separately)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0,<2.5.0+cpu
 torchvision
 torchaudio
