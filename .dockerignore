@@ -62,3 +62,6 @@ storage/history.db
 
 # uv
 uv.lock
+
+# Keep requirements files for Docker builds
+!requirements-*.txt

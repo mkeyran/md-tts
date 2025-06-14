@@ -59,6 +59,8 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - `docker-compose.yml` - Docker Compose configuration
 - `docker-compose.dev.yml` - Development Docker Compose override
 - `.dockerignore` - Docker ignore patterns
+- `requirements-cpu.txt` - CPU-only dependencies (no CUDA)
+- `requirements-cuda.txt` - CUDA-enabled dependencies
 
 ## Technology Notes
 
@@ -80,23 +82,27 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 
 **CPU Version:**
 - Based on `python:3.11-slim` image
+- Uses CPU-only PyTorch (no CUDA dependencies)
+- Smaller image size, faster build times
 - Suitable for development and light production use
 - No GPU requirements
 - Accessible on port 8000
 
 **CUDA Version:**
 - Based on `nvidia/cuda:12.1-runtime-ubuntu22.04` image
+- Uses CUDA-enabled PyTorch with GPU acceleration
 - Requires NVIDIA Container Toolkit
-- Provides GPU acceleration for faster TTS conversion
+- Provides significant performance improvement for TTS conversion
 - Accessible on port 8001
 - Recommended for high-volume production use
 
 **Key Features:**
-- Automatic dependency installation with uv
+- Optimized dependency installation (CPU vs CUDA variants)
 - Health checks for monitoring
 - Volume mounts for persistent storage
 - Development mode with hot reload
 - Proper cleanup and resource management
+- Smaller CPU image without CUDA dependencies
 
 ## Development Progress
 

@@ -53,12 +53,14 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up tts-cpu
 **For CPU version:**
 - Docker
 - Docker Compose
+- Uses CPU-only PyTorch (smaller image, no CUDA dependencies)
 
 **For CUDA version:**
 - Docker
 - Docker Compose
 - [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
 - NVIDIA GPU with CUDA support
+- Uses CUDA-enabled PyTorch for GPU acceleration
 
 ### Docker Commands
 
@@ -139,6 +141,8 @@ tts/
 ├── docker-compose.yml         # Docker Compose configuration
 ├── docker-compose.dev.yml     # Development Docker Compose override
 ├── .dockerignore              # Docker ignore patterns
+├── requirements-cpu.txt       # CPU-only dependencies
+├── requirements-cuda.txt      # CUDA-enabled dependencies
 └── pyproject.toml             # Project configuration
 ```
 
