@@ -19,10 +19,13 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - `uv run uvicorn main:app --host 0.0.0.0 --port 8000` - Start production server
 
 ### Testing
-- `uv run pytest` - Run all tests
+- `uv run pytest` - Run all tests (40+ tests)
 - `uv run pytest -v` - Run tests with verbose output
 - `uv run pytest tests/` - Run specific test directory
 - `uv run pytest --cov` - Run tests with coverage
+- `uv run pytest tests/test_main.py` - Run API endpoint tests
+- `uv run pytest tests/test_tts_service.py` - Run TTS service tests
+- `uv run pytest tests/test_markdown_processor.py` - Run markdown processor tests
 
 ### Code Quality
 - `uv run ruff check` - Run linting
@@ -40,20 +43,57 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 
 ## Technology Notes
 
-- Uses FastAPI for the web framework
+- Uses FastAPI for the web framework with async support
 - piper-tts for text-to-speech conversion (requires Python 3.8-3.11)
+- Automatic voice model downloading from HuggingFace repositories
+- CUDA acceleration support when available
 - SQLite for storing conversion history
 - Vanilla JavaScript for frontend (no React)
 - uv for package management instead of pip/poetry
 - Markdown library for parsing markdown documents
 - BeautifulSoup for HTML text extraction
+- aiohttp for async HTTP requests
+- wave module for proper audio file handling
 
 ## Development Progress
 
 - ✅ Project structure and FastAPI setup
 - ✅ Markdown processing with text extraction
 - ✅ Comprehensive test suite for markdown processor
-- ⏳ Piper-TTS integration with CUDA detection
-- ⏳ File storage and download endpoints
-- ⏳ Conversion history database
+- ✅ Piper-TTS integration with CUDA detection
+- ✅ Voice model auto-download from HuggingFace
+- ✅ File storage and download endpoints
+- ✅ Complete FastAPI backend with all endpoints
+- ✅ 40+ tests covering all functionality
+- ⏳ Conversion history database (in progress)
 - ⏳ Web frontend interface
+
+## API Endpoints
+
+### Implemented Endpoints
+- `GET /` - API information and version
+- `GET /health` - Health check with service status and CUDA info
+- `POST /convert` - Convert markdown text to speech (returns conversion_id)
+- `GET /download/{conversion_id}` - Download generated MP3 file
+- `GET /status/{conversion_id}` - Check conversion status and file info
+
+### Request/Response Examples
+
+**Convert Text:**
+```bash
+curl -X POST http://localhost:8000/convert \
+  -H "Content-Type: application/json" \
+  -d '{"markdown_text": "# Hello\n\nThis is **test** text.", "title": "My Audio"}'
+# Returns: {"conversion_id": "uuid", "status": "completed", "download_url": "/download/uuid"}
+```
+
+**Download Audio:**
+```bash
+curl -o audio.mp3 http://localhost:8000/download/{conversion_id}
+```
+
+**Check Status:**
+```bash
+curl http://localhost:8000/status/{conversion_id}
+# Returns: {"conversion_id": "uuid", "status": "completed", "file_size": 12345, "download_url": "/download/uuid"}
+```
