@@ -9,7 +9,8 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 ## Development Commands
 
 ### Package Management
-- `uv sync` - Install/update dependencies
+- `uv python install 3.11` - Install Python 3.11 (required for piper-tts)
+- `uv sync --dev --python 3.11` - Install/update dependencies with Python 3.11
 - `uv add <package>` - Add new dependency
 - `uv run <command>` - Run command in project environment
 
@@ -40,7 +41,19 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 ## Technology Notes
 
 - Uses FastAPI for the web framework
-- piper-tts for text-to-speech conversion
+- piper-tts for text-to-speech conversion (requires Python 3.8-3.11)
 - SQLite for storing conversion history
 - Vanilla JavaScript for frontend (no React)
 - uv for package management instead of pip/poetry
+- Markdown library for parsing markdown documents
+- BeautifulSoup for HTML text extraction
+
+## Development Progress
+
+- ✅ Project structure and FastAPI setup
+- ✅ Markdown processing with text extraction
+- ✅ Comprehensive test suite for markdown processor
+- ⏳ Piper-TTS integration with CUDA detection
+- ⏳ File storage and download endpoints
+- ⏳ Conversion history database
+- ⏳ Web frontend interface
