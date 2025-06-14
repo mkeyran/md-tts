@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  tts-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./storage:/app/storage
+      - ./static:/app/static  # For frontend development
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=development
+    command: ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  tts-cuda:
+    build:
+      context: .
+      dockerfile: Dockerfile.cuda
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./storage:/app/storage
+      - ./static:/app/static  # For frontend development
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=development
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    command: ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

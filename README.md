@@ -24,7 +24,62 @@ A web-based text-to-speech application that converts markdown documents to audio
 - **Storage**: SQLite for history, local filesystem for MP3 files
 - **Dependencies**: aiohttp, torch, markdown, beautifulsoup4
 
-## Development
+## Quick Start with Docker
+
+### CPU Version
+```bash
+# Build and run CPU version
+docker-compose up tts-cpu
+
+# Access the application at http://localhost:8000
+```
+
+### CUDA Version (requires nvidia-docker)
+```bash
+# Build and run CUDA version
+docker-compose up tts-cuda
+
+# Access the application at http://localhost:8001
+```
+
+### Development Mode
+```bash
+# Run with hot reload for development
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up tts-cpu
+```
+
+### Docker Requirements
+
+**For CPU version:**
+- Docker
+- Docker Compose
+
+**For CUDA version:**
+- Docker
+- Docker Compose
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+- NVIDIA GPU with CUDA support
+
+### Docker Commands
+
+```bash
+# Build images
+docker-compose build
+
+# Run in background
+docker-compose up -d tts-cpu
+
+# View logs
+docker-compose logs -f tts-cpu
+
+# Stop services
+docker-compose down
+
+# Clean up (remove containers and images)
+docker-compose down --rmi all
+```
+
+## Local Development
 
 This project uses `uv` for package management.
 
@@ -79,6 +134,11 @@ tts/
 ├── storage/                    # MP3 files and SQLite database
 ├── tests/                      # Test files
 │   └── test_*.py              # Test modules
+├── Dockerfile.cpu             # Docker configuration for CPU
+├── Dockerfile.cuda            # Docker configuration for CUDA/GPU
+├── docker-compose.yml         # Docker Compose configuration
+├── docker-compose.dev.yml     # Development Docker Compose override
+├── .dockerignore              # Docker ignore patterns
 └── pyproject.toml             # Project configuration
 ```
 
@@ -128,3 +188,4 @@ curl -X DELETE http://localhost:8000/history/{conversion_id}
 - ✅ Conversion history tracking with SQLite database
 - ✅ Comprehensive test suite (58 tests)
 - ✅ Responsive web frontend interface
+- ✅ Docker containerization with CPU and CUDA variants

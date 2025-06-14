@@ -15,8 +15,18 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - `uv run <command>` - Run command in project environment
 
 ### Running the Application
+
+**Local Development:**
 - `uv run uvicorn main:app --reload` - Start development server
 - `uv run uvicorn main:app --host 0.0.0.0 --port 8000` - Start production server
+
+**Docker (Recommended for Production):**
+- `docker-compose up tts-cpu` - Run CPU version on port 8000
+- `docker-compose up tts-cuda` - Run CUDA version on port 8001 (requires nvidia-docker)
+- `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up tts-cpu` - Development mode with hot reload
+- `docker-compose up -d tts-cpu` - Run in background
+- `docker-compose logs -f tts-cpu` - View logs
+- `docker-compose down` - Stop services
 
 ### Testing
 - `uv run pytest` - Run all tests (58 tests)
@@ -44,6 +54,11 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
   - `app.js` - Frontend application with automated status updates
 - `storage/` - File storage for MP3 files and database
 - `tests/` - Test files organized by module
+- `Dockerfile.cpu` - Docker configuration for CPU-only deployment
+- `Dockerfile.cuda` - Docker configuration for CUDA/GPU deployment
+- `docker-compose.yml` - Docker Compose configuration
+- `docker-compose.dev.yml` - Development Docker Compose override
+- `.dockerignore` - Docker ignore patterns
 
 ## Technology Notes
 
@@ -59,6 +74,30 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - aiohttp for async HTTP requests
 - wave module for proper audio file handling
 
+## Deployment Options
+
+### Docker Deployment (Recommended)
+
+**CPU Version:**
+- Based on `python:3.11-slim` image
+- Suitable for development and light production use
+- No GPU requirements
+- Accessible on port 8000
+
+**CUDA Version:**
+- Based on `nvidia/cuda:12.1-runtime-ubuntu22.04` image
+- Requires NVIDIA Container Toolkit
+- Provides GPU acceleration for faster TTS conversion
+- Accessible on port 8001
+- Recommended for high-volume production use
+
+**Key Features:**
+- Automatic dependency installation with uv
+- Health checks for monitoring
+- Volume mounts for persistent storage
+- Development mode with hot reload
+- Proper cleanup and resource management
+
 ## Development Progress
 
 - ✅ Project structure and FastAPI setup
@@ -71,6 +110,7 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - ✅ 58 tests covering all functionality
 - ✅ Conversion history database with SQLite
 - ✅ Responsive web frontend with automated status updates
+- ✅ Docker containerization with CPU and CUDA variants
 
 ## API Endpoints
 
