@@ -243,6 +243,42 @@ VOICE_MODELS: Dict[str, VoiceModel] = {
         model_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/denis/medium/ru_RU-denis-medium.onnx",
         config_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/denis/medium/ru_RU-denis-medium.onnx.json"
     ),
+    "ru_RU-dmitri-medium": VoiceModel(
+        id="ru_RU-dmitri-medium",
+        language="Russian",
+        language_code="ru_RU",
+        language_name="Русский",
+        speaker="dmitri",
+        quality="medium",
+        gender="male",
+        description="Russian male voice",
+        model_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/dmitri/medium/ru_RU-dmitri-medium.onnx",
+        config_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/dmitri/medium/ru_RU-dmitri-medium.onnx.json"
+    ),
+    "ru_RU-irina-medium": VoiceModel(
+        id="ru_RU-irina-medium",
+        language="Russian",
+        language_code="ru_RU",
+        language_name="Русский",
+        speaker="irina",
+        quality="medium",
+        gender="female",
+        description="Russian female voice",
+        model_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/irina/medium/ru_RU-irina-medium.onnx",
+        config_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/irina/medium/ru_RU-irina-medium.onnx.json"
+    ),
+    "ru_RU-ruslan-medium": VoiceModel(
+        id="ru_RU-ruslan-medium",
+        language="Russian",
+        language_code="ru_RU",
+        language_name="Русский",
+        speaker="ruslan",
+        quality="medium",
+        gender="male",
+        description="Russian male voice",
+        model_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/ruslan/medium/ru_RU-ruslan-medium.onnx",
+        config_url="https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/ru/ru_RU/ruslan/medium/ru_RU-ruslan-medium.onnx.json"
+    ),
 }
 
 
