@@ -218,6 +218,33 @@ async def download_audio_file(conversion_id: str):
         raise HTTPException(status_code=500, detail="Download failed")
 
 
+@app.get("/audio/{conversion_id}")
+async def stream_audio_file(conversion_id: str):
+    """Stream the generated audio file for in-browser playback."""
+    try:
+        audio_file = tts_service.get_audio_file_path(conversion_id)
+
+        if not audio_file or not audio_file.exists():
+            raise HTTPException(status_code=404, detail="Audio file not found")
+
+        # Determine media type
+        media_type = "audio/mpeg" if audio_file.suffix == ".mp3" else "audio/wav"
+
+        # Return the file for streaming with inline disposition
+        return FileResponse(
+            path=audio_file, 
+            media_type=media_type, 
+            headers={"Content-Disposition": "inline"}
+        )
+
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        logger.error(f"Audio streaming failed: {e}")
+        raise HTTPException(status_code=500, detail="Audio streaming failed")
+
+
 @app.get("/status/{conversion_id}")
 async def get_conversion_status(conversion_id: str):
     """Get the status of a conversion."""

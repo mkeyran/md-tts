@@ -54,8 +54,16 @@ Your markdown will be converted to speech!"></textarea>
                             <div class="progress-fill"></div>
                         </div>
                         <div id="download-section" class="download-section hidden">
-                            <button id="download-btn" class="btn-success">Download MP3</button>
-                            <p id="file-info"></p>
+                            <div class="audio-section">
+                                <audio id="audio-player" controls class="audio-player">
+                                    <source type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                            <div class="download-actions">
+                                <button id="download-btn" class="btn-success">Download MP3</button>
+                                <p id="file-info"></p>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -22,6 +22,7 @@ class TTSApp {
         this.downloadSection = document.getElementById('download-section');
         this.downloadBtn = document.getElementById('download-btn');
         this.fileInfo = document.getElementById('file-info');
+        this.audioPlayer = document.getElementById('audio-player');
         this.historyList = document.getElementById('history-list');
         this.refreshHistoryBtn = document.getElementById('refresh-history');
     }
@@ -214,6 +215,13 @@ class TTSApp {
     showDownloadSection(fileSize) {
         this.downloadSection.classList.remove('hidden');
         this.fileInfo.textContent = `File size: ${this.formatFileSize(fileSize)}`;
+        
+        // Setup audio player
+        if (this.currentConversionId) {
+            const audioSource = this.audioPlayer.querySelector('source');
+            audioSource.src = `/audio/${this.currentConversionId}`;
+            this.audioPlayer.load(); // Reload the audio element with new source
+        }
     }
 
     async downloadAudio() {
@@ -279,6 +287,14 @@ class TTSApp {
                     </div>
                 </div>
                 <div class="history-item-preview">${this.escapeHtml(item.text_preview)}</div>
+                ${item.status === 'completed' ? `
+                    <div class="history-audio-section">
+                        <audio controls class="history-audio-player">
+                            <source src="/audio/${item.id}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                ` : ''}
                 ${item.file_size ? `<div class="history-item-info">Size: ${this.formatFileSize(item.file_size)}</div>` : ''}
             </div>
         `).join('');
