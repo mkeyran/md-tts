@@ -51,11 +51,14 @@ uv run mypy .
 
 ## Usage
 
-1. Start the server
-2. Open your browser to the web interface
-3. Paste your markdown text
-4. Click "Convert to Speech"
-5. Download the generated MP3 file
+1. Start the server: `uv run uvicorn main:app --reload`
+2. Open your browser to http://localhost:8000
+3. Paste your markdown text in the textarea
+4. Optionally add a title for your audio file
+5. Click "Convert to Speech" 
+6. Wait for conversion to complete (automatic status updates)
+7. Download the generated MP3 file
+8. View and manage your conversion history
 
 ## Project Structure
 
@@ -70,6 +73,9 @@ tts/
 │   ├── tts_service.py          # TTS conversion with piper-tts
 │   └── database_service.py     # Conversion history management
 ├── static/                     # Frontend HTML/CSS/JavaScript
+│   ├── index.html             # Main web interface
+│   ├── style.css              # Responsive styling
+│   └── app.js                 # Frontend application logic
 ├── storage/                    # MP3 files and SQLite database
 ├── tests/                      # Test files
 │   └── test_*.py              # Test modules
@@ -79,7 +85,8 @@ tts/
 ## API Endpoints
 
 ### Core Endpoints
-- `GET /` - API information
+- `GET /` - Main web interface
+- `GET /api` - API information
 - `GET /health` - Health check with service status and CUDA info
 - `POST /convert` - Convert markdown text to speech
 - `GET /download/{conversion_id}` - Download generated MP3 file
@@ -120,4 +127,4 @@ curl -X DELETE http://localhost:8000/history/{conversion_id}
 - ✅ Complete API with MP3 generation
 - ✅ Conversion history tracking with SQLite database
 - ✅ Comprehensive test suite (58 tests)
-- ⏳ Web frontend interface
+- ✅ Responsive web frontend interface

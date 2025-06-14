@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Markdown Converter</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 TTS Markdown Converter</h1>
+            <p>Convert your markdown documents to audio files</p>
+        </header>
+
+        <main>
+            <div class="convert-section">
+                <div class="input-group">
+                    <label for="title">Title (optional):</label>
+                    <input type="text" id="title" placeholder="Enter a title for your audio file">
+                </div>
+
+                <div class="input-group">
+                    <label for="markdown-text">Markdown Text:</label>
+                    <textarea id="markdown-text" placeholder="# Hello World
+
+This is a **test** of the TTS conversion.
+
+- Item 1
+- Item 2
+
+Your markdown will be converted to speech!"></textarea>
+                </div>
+
+                <button id="convert-btn" class="btn-primary">Convert to Speech</button>
+            </div>
+
+            <div id="status-section" class="status-section hidden">
+                <div class="status-card">
+                    <div class="status-header">
+                        <h3>Conversion Status</h3>
+                        <span id="status-badge" class="status-badge">Processing...</span>
+                    </div>
+                    <div class="status-body">
+                        <p id="status-message">Converting your markdown to speech...</p>
+                        <div id="progress-bar" class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div id="download-section" class="download-section hidden">
+                            <button id="download-btn" class="btn-success">Download MP3</button>
+                            <p id="file-info"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <div class="history-header">
+                    <h2>Conversion History</h2>
+                    <button id="refresh-history" class="btn-secondary">Refresh</button>
+                </div>
+                <div id="history-list" class="history-list">
+                    <p class="loading">Loading history...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

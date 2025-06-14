@@ -67,7 +67,16 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def root():
-    """Root endpoint returning basic info."""
+    """Serve the main web interface."""
+    html_file = Path("static/index.html")
+    if html_file.exists():
+        return FileResponse(html_file)
+    return {"message": "TTS Markdown Converter API", "version": "0.1.0"}
+
+
+@app.get("/api")
+async def api_info():
+    """API information endpoint."""
     return {"message": "TTS Markdown Converter API", "version": "0.1.0"}
 
 

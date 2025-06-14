@@ -39,6 +39,9 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - `models/` - Pydantic models and database schemas
 - `services/` - Business logic and external integrations
 - `static/` - Frontend HTML/CSS/JavaScript files
+  - `index.html` - Main web interface with responsive design
+  - `style.css` - Modern CSS styling with gradients and animations
+  - `app.js` - Frontend application with automated status updates
 - `storage/` - File storage for MP3 files and database
 - `tests/` - Test files organized by module
 
@@ -67,12 +70,13 @@ This is a TTS (Text-to-Speech) web application that converts markdown documents 
 - ✅ Complete FastAPI backend with all endpoints
 - ✅ 58 tests covering all functionality
 - ✅ Conversion history database with SQLite
-- ⏳ Web frontend interface
+- ✅ Responsive web frontend with automated status updates
 
 ## API Endpoints
 
 ### Implemented Endpoints
-- `GET /` - API information and version
+- `GET /` - Main web interface
+- `GET /api` - API information and version
 - `GET /health` - Health check with service status and CUDA info
 - `POST /convert` - Convert markdown text to speech (returns conversion_id)
 - `GET /download/{conversion_id}` - Download generated MP3 file
